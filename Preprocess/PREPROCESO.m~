@@ -569,18 +569,10 @@ end
 
 for i=1:length(S)
     for j=1:length(Info)
-            if isfield(Info(j),'Stream') 
-                if isprop(Info(j).Stream,'weigth')
-                    if ~isempty(Info(j).Stream.weigth)
-                        if Info(j).Stream.weigth == S(i).Streams.weigth
-                            if isfield(Info(j),'en')
-                                if strcmp(Info(j).tag,'Input')
-                                    S(i).Streams.Value = Info(j).en.val
-                                end
-                            end
-                        end
+            if isfield(Info(j),'weigth') 
+                    if Info(j).weigth == S(i).Streams.weigth
+                    S(i).Streams.Stream
                     end
-                end
             end
     end
 end

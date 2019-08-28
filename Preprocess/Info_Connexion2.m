@@ -34,13 +34,9 @@ end
 
 for j = 1:length(Info)   
     for i = 1 :length(OrderGroup_)
-        i
             if any(v == i)
-                55
                 break
-            end     
-            i
-            
+            end              
         if strcmp(Info(j).tag,'Input') || strcmp(Info(j).tag,'Stream')
             if OrderGroup_(i).Nodes.Siweigth == Info(j).Stream.weigth
                                 for t =1:length(Info)

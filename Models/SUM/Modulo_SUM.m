@@ -1,5 +1,5 @@
 function Out=Modulo_SUM(X,In)
-
+    
     suma=0;
         for i=1:length(X(1,:))
             suma=suma+X(1:end-1,i);

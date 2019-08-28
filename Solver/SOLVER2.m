@@ -19,17 +19,19 @@ Error_Vector=0;
 n=length(OrderGroup);
 fit=figure;
 axesit=axes(fit);
-set(fit,'Name','Convergencia','numbertitle','off');
+set(fit,'Name','Convergence','numbertitle','off');
 q=zeros(length(v)+1,1);
 
  while it <= MaxIt
         for i=1:n
             r=length(OrderGroup(i).Nodes.Si);
             if r == 1
-                    q=zeros(length(v)+1,1);                  
+                    q=zeros(length(v)+1,1);      
                     OrderGroup(i).Nodes.OldValue=OrderGroup(i).Nodes.So.Stream.Value;
                     OrderGroup(i).Nodes.So.Stream.Value=(1-q).*OrderGroup(i).Nodes.Ecuacion(OrderGroup(i).Nodes.Si{1}.Stream.Value,OrderGroup(i).Nodes.Container)+q.*OrderGroup(i).Nodes.Si{1}.Stream.Value;
-                    OrderGroup(i).Nodes.NewValue=OrderGroup(i).Nodes.So.Stream.Value;                   
+                    OrderGroup(i).Nodes.NewValue=OrderGroup(i).Nodes.So.Stream.Value;
+                    OrderGroup(i).Nodes.So.Stream.Value
+                   
             else
                 Val_Temp=[];
                 suma=0;
@@ -122,7 +124,7 @@ q=zeros(length(v)+1,1);
         if abs((sum(sumOut)-sum(sumIn))/sum(sumIn)) <= Mtol
             abs((sum(sumOut)-sum(sumIn))/sum(sumIn))
                 semilogy(axesit,It_Vector,Error_Vector,'k')
-                xlabel('Iteración');
+                xlabel('Iteration');
                 ylabel('Error[log]');
                 grid on
             
