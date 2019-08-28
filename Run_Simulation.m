@@ -1,4 +1,4 @@
-%  function Run_Simulation(~,~)
+ function Run_Simulation(~,~)
 global v  X  cu S2 SolverData MaxIt Tol state Info OrderGroup
 
 MassTol=1e-5;
@@ -51,4 +51,4 @@ end
 delete(wb)
 msgbox('Simulación terminada');
 state= 1;
-% end
+end
