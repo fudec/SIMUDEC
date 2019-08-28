@@ -1,0 +1,514 @@
+function Out=SAG_Model(X,Ind)
+% Caracter�sticas molino
+global v rol ros
+
+v_=v;
+v_ = v_/1000;
+
+
+F=X(1:end-1);
+for i = 1:length(F)
+    if F(i) == 0
+        F(i) = 1e-8;
+    end
+end
+win=X(end);
+v2=v_(2:end);
+F=F';
+ros=2.7;
+rol=1;
+MaxIt=30; %%% Iteraci�n
+g=9.81;
+A_Breakage=45.8; %%% Fractura
+b=0.75;
+ta=0.13;
+
+U=0.4; %%% Voidage
+Umin=0.4;
+D=5; %%% Car. molino
+L=2.48;
+xg=28.3;
+xp=74.11;
+xm=0.5427;
+rn=0.972;
+Vm=D^2*pi()*L/4;
+rm=D/2;
+Cs=0.81;
+Nm=60/(2*pi())*sqrt(2*9.81/D);
+RPM=60/(2*pi())*sqrt(2*9.81/D);
+Nm=Nm/60;
+GOAfr=0.179;
+Dt=1.6;
+GOA=GOAfr*pi()*D^2/4; %%%% Revisar
+DiscargeConeangle=15;
+fp=0.0821;
+TopSb=100; %%% Car. bolas
+rob=7.8;
+Jb=0.064;
+vb=TopSb*[1/sqrt(2) 1/2 1/(2*sqrt(2)) 1/4]; 
+sb=[0.5 0.35 0.15 0]*Jb*Vm*rob*(1-U); %%%% Intersticios 
+ballindex=v2(v2 <= TopSb/sqrt(2));
+ballindex=max(ballindex);
+
+[j,~]=find(v_ == ballindex);
+ballindex=j-1;
+vBollas=v2(ballindex:end);
+Masabolas=sum(sb);
+ballInter=interp1([vb 0],[sb 0]/Masabolas,vBollas,'pchip');
+sbx=[zeros(length(v2)-length(vBollas),1);ballInter*Masabolas];
+gamma=0.8031;
+Jpo=0.33*(1-rn);
+%%%% RD Par.
+k=[2.504 0.397 0.597 0.192 0.002;4.682 0.468 0.327 0.0085 0;3.141 0.402 4.632 0 0;1.057 0.333 0.171 0.0014 0;1.894 0.014 0.473 0.002 0];
+
+Sa=log(RPM/23.6);
+Sb=Cs/0.75;
+Db=log(TopSb/90);
+Rf=0.1305;
+F_80=F80(F,v2); 
+%%%% Flujos
+P=sum(F);
+Q=P/ros+win/rol;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%      kg   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+n=length(vb);
+z=length(v_)-1;
+q=v_(v_ >= 16);
+q=min(q);
+[j,~]=find(v_ == q);
+q=j-1;
+% q=q-1;
+% Etapa I Valores iniciales
+
+s=F;
+w=0.95;
+% w=P/(win*rol+P);
+Wcarga=P*(1-w)/w; %%% Inicial es igual al de entrada
+
+Masa=0;
+Masab=0;
+for i=1:length(s)
+    if v2(i) >= xg %%% mAYOR O IGUAL???
+        Masa=Masa+s(i);
+        Masab=Masab+sbx(i);
+    end
+end
+
+MasaMenor=0;
+MasaMenorb=0;
+for i=1:length(s)
+    if v2(i) < xg %%% mAYOR O IGUAL???
+        MasaMenor=MasaMenor+s(i);
+        MasaMenorb=MasaMenorb+sbx(i);
+    end
+end
+
+% Jpg Jt
+VolumenMasa=Masa/ros;
+VolumenMasaBulk=VolumenMasa/(1-Umin);
+
+VolumenMasab=Masab/rob;
+VolumenMasaBulkB=VolumenMasab/(1-U);
+
+Jt=(VolumenMasaBulk+VolumenMasaBulkB)/Vm;
+
+
+    VolumenMasaMenor=MasaMenor/ros;
+    VolumenMasaMenorb=MasaMenorb/rob;
+    
+    VolumenMasaMenorBulk=VolumenMasaMenor/(1-Umin);
+    VolumenMasaMenorBulkB=VolumenMasaMenorb/(1-U);
+
+    Jpg=(Wcarga/rol+VolumenMasaMenorBulk+VolumenMasaMenorBulkB)/Vm;
+    
+    sxm_=Jpg*pi()*D^2*L/4;
+
+    Jpm=sqrt(Q/(6100*GOA*gamma^(2.5)*Cs^(-1.38)*D^0.5));
+    Jmax=0.5*Jt-Jpo;
+
+if Jpm > Jmax
+   
+    JpmTemp=Jpm;
+    Jpm=Jmax;
+    Qm=Jpm^2*6100*GOA*gamma^(2.5)*Cs^(-1.38)*D^0.5;
+    Qt=Q-Qm;
+    Jpt=Qt/(935*gamma^(2)*GOA*D^0.5);
+    Jp=Jpm+Jpt;
+    
+else
+    Jp=Jpm;
+    Jpt=0;
+    Qt=0;
+    Qm=Q;
+end
+%%%% d0
+d0=(Qm+Qt)/((Jpm+Jpt)*Vm);
+
+kk=0;
+sxmVector=0;
+
+x=zeros(length(v_)-1,1);
+
+for i=1:z
+      x(i)=(v_(i)+v_(i+1))/2;
+end
+x(end)=v_(end);
+% sbx=zeros(length(v)-1,1);
+
+% length(ballInter)
+% % sbxFraction=sbxPasante(i)-sbxPasante(i-1);
+% for i=1:z
+%     for j=1:n
+%         if v(i) <= vb(j) && vb(j) >= v(i+1)
+%             sbx(j) = sb(j);
+%         elseif vb(j) >= v(1)
+%             sbx(1) = sb(j);
+%         end
+%     end
+% end
+
+while kk < MaxIt
+sxmVector(kk+1)=d0;
+Masa=0;
+Masab=0;
+for i=1:length(s)
+    if v2(i) >= xg %%% mAYOR O IGUAL???
+        Masa=Masa+s(i);
+        Masab=Masab+sbx(i);
+    end
+end
+
+MasaMenor=0;
+MasaMenorb=0;
+for i=1:length(s)
+    if v2(i) < xg %%% mAYOR O IGUAL???
+        MasaMenor=MasaMenor+s(i);
+        MasaMenorb=MasaMenorb+sbx(i);
+    end
+end
+% Jt
+
+VolumenMasa=Masa/ros;
+VolumenMasaBulk=VolumenMasa/(1-Umin);
+
+VolumenMasab=Masab/rob;
+VolumenMasaBulkB=VolumenMasab/(1-U);
+
+Jt=(VolumenMasaBulk+VolumenMasaBulkB)/Vm;%%% Jb tiene voidage??? 
+
+
+% Etapa II Fractura
+
+%%% Baja energ�a
+
+Al=BallStdInterTa(v2,ta); 
+
+%%% Alta energ�a
+
+% ballInterPasante=interp1([vb 0],[Pasante(sb) 0],x,'pchip');
+
+    M=pi()/6*(x/1e3).^3*ros;
+    [aM,bM] = size(M);
+        if bM > aM
+            M = M';
+        end
+        [as,bs] = size(s);
+        if bs > as
+            s = s';
+        end
+    ns=s./M;
+    vo=s./ros;
+    Mb=pi()/6*(x/1e3).^3*rob; 
+    nb=sbx./Mb;
+    vob=sbx./rob;
+    
+sumavo=0;
+sumavob=0;
+
+for i=1:z 
+    for j=1:i-1
+        if vo(i) < 1e-5
+            vo(i) = 1e-5;
+        end
+        sumavo=sumavo+vo(i);
+    end
+    for j=1:n
+        if vob(i) < 1e-5
+            vob(i) = 1e-5;
+        end
+        sumavob=sumavob+vob(i);
+    end
+        rom(i)=((0.5*vo(i)+sumavo)*ros+sumavob*rob)/(0.5*vo(i)+sumavo+sumavob);
+end
+
+suma1=0;
+suma2=0;
+suma3=0;
+suma4=0;
+
+for i=1:z   
+    if x(i) >= 50
+        for j=1:i-1
+            
+            if ns(j) < 1e-5
+                ns(j) = 1e-5;
+            end
+            
+            suma1=suma1+ns(j)*x(i)^2;
+        end
+        for j=1:z
+            if nb(j) < 1e-5
+                nb(j) = 1e-5;
+            end
+            
+            suma2=suma2+nb(j)*x(j)^2;
+        end
+        for j=1:i-1
+            
+            if ns(j) < 1e-5
+                ns(j) = 1e-5;
+            end
+            
+            suma3=suma3+ns(j);
+        end
+        for j=1:z
+            if nb(j) < 1e-5
+                nb(j) = 1e-5;
+            end
+            
+            suma4=suma4+nb(j);
+        end
+        gms(i)=((0.5*ns(i)*x(i)^2+suma1+suma2)/(0.5*ns(i)+suma3+suma4))^0.5;
+    else
+        gms(i)=gms(i-1);
+    end
+end
+
+sumab=0;
+sumas=0;
+% for i=1:n 
+    for j=1:z
+        sumab=sumab+vob(j);
+    end
+    
+    for j=1:q
+        sumas=sumas+vo(j);
+    end
+if sumas < 1e-5
+    sumas = 1e-5;
+end
+        phi=(sumab*rob+sumas*ros)/(sumas*ros);
+% end
+if  Cs > 0.35*(3.364-Jt)
+    ExCs=Cs;
+else
+    ExCs=0.35*(3.364-Jt);
+end
+% Jt=0.5;
+thetat=2.5307*(1.2796-Jt)*(1-exp(-19.42*(ExCs-Cs)))+pi()/2;
+thetas=pi()/2-(thetat-pi()/2)*((0.3386+0.1041*Cs)+(1.54-2.5673*Cs)*Jt);
+r_=rm/2*(1+(1-2*pi()*Jt/(2*pi()-thetat+thetas))^0.5);
+N_=Nm/2;
+tc=(2*pi()-thetat+thetas)/(2*pi()*N_);
+tf=(2*r_*(sin(thetas)-sin(thetat))/9.81)^0.5;
+Brs=tc/(tc+tf);
+ri=rm*(1-(2*pi()*Brs*Jt)/(2*pi()-thetat+thetas))^0.5;
+
+h=(rm+ri)/2*(sin(thetas)-sin(thetat));
+Ecs=phi*gms.*rom*g*h./(ros*x'*3.6e3);
+% Tomhas;
+
+T10=A_Breakage*(1-exp(-b*Ecs));
+for i=1:length(T10)
+    T102(length(T10)-i+1)=T10(i);
+end
+% T10=T102;
+Ah=NuevaInterT10SAG2(v2,T10);
+
+% Union matrices
+for i=1:length(Ah(1,:))
+    NumTemp(:,i)=T10(i)*Ah(:,i);
+end
+    DenTemp=ta+T10;
+    FinalTemp=NumTemp+Al*ta;
+    
+for i=1:length(FinalTemp(1,:))
+        FinalTemp(:,i)=FinalTemp(:,i)./DenTemp(i);
+end
+        AFinal=FinalTemp;
+        
+ % RD
+% S5=(Sa-Sb^2*Jb*k(5,4)*F_80*((k(4,1)+Jb*(k(4,3)-k(4,4)*F_80)))+Sb*(k(5,1)+k(5,2)*F_80+Jb*(k(5,3)-3*Db)))/(1+Sb^2*Jb*k(5,4)*F_80*k(4,2));
+
+% Constant=[1.8 0.14 1.4455 -0.2111 -3.8414];
+Constant=[0.3365 -1.15 0.9459 0.04445 -2.99];
+% Constant=[0 0 0 0 0];
+S5=Sa+Sb*(k(5,1)+k(5,2)*F_80+Jb*100*(k(5,3)-k(5,4)*F_80)-3*Db)+Constant(5);
+S4=Sb*((k(4,1)+k(4,2)*S5+Jb*100*(k(4,3)-k(4,4)*F_80)))+Constant(4);
+S3=Sa+(k(3,1)+k(3,2)*S4-k(3,3)*Rf)/Sb+Constant(3);
+S2=k(2,1)+k(2,2)*S3-k(2,3)*S4-k(2,4)*F_80+Constant(2);
+S1=(k(1,1)+k(1,2)*S2-k(1,3)*S3+Jb*100*(k(1,4)-k(1,5)*F_80)-Db)/Sb+Constant(1);
+
+S6=S5*1.001;
+
+KnotsValue=exp([-10 S1 log(175) log(175) S2 log(165) S3 S4 S5 S6]);
+% KnotsValue=[1.79 3.68 3.83 2.63 2.7];
+KnotsSize=[0.009 0.25 0.9 2 5 7.5 16 44.8 128 v_(1)];
+% KnotsSize=[0.25 4 16 44.8 128];
+R=RD(v2,KnotsSize,KnotsValue);
+
+% Clasificaci�n
+
+c=zeros(length(v_)-1,1);
+for i=1:length(v2)
+    if v2(i) >= xp
+       c(i)= 0;
+    end
+    if xg < v2(i) && v2(i)< xp
+       c(i)=(xp-v2(i))/(xp-xg)*fp;
+%          c(i)=(v2(i)-xp)/(xg-xp)*fp;
+    elseif xm < v2(i) && v2(i) <= xg
+       c(i)= ((v2(i)-xm)/(xg-xm)*(fp-1))+1;
+%         c(i)= (xm-v2(i))/(xm-xg)*(fp-1)+1;
+    elseif v2(i) <= xm
+       c(i) = 1;
+    end
+end
+% C�lculo s
+
+s_=zeros(length(v_)-1,1);
+for i=1:length(s_)
+    sumai=0;
+    for j=1:i-1
+        sumai=sumai+R(j)*s_(j)*AFinal(i,j);
+    end 
+    
+        
+        s_(i)=(F(i)+sumai)/(d0*c(i)+(1-AFinal(i,i))*R(i));
+       
+end
+
+% s_(1)=F(1)/(-R(1)+d0*c(1)+R(1)*AFinal(1,1));
+% 
+% for i=2:length(s_)
+%     sumai=0;
+%     for j=1:i
+%         sumai=sumai+R(j)*s_(j)*AFinal(i,j);
+%     end 
+%         s_(i)=(F(i)+sumai)/(d0*c(i)+R(i));
+% end
+
+% Jotas
+Masa=0;
+Masab=0;
+for i=1:length(s)
+    if v2(i) >= xg %%% mAYOR O IGUAL???
+        Masa=Masa+s(i);
+        Masab=Masab+sbx(i);
+    end
+end
+
+MasaMenor=0;
+MasaMenorb=0;
+for i=1:length(s)
+    if v2(i) < xg %%% mAYOR O IGUAL???
+        MasaMenor=MasaMenor+s(i);
+        MasaMenorb=MasaMenorb+sbx(i);
+    end
+end
+% Jt
+
+    VolumenMasa=Masa/ros;
+    VolumenMasaBulk=VolumenMasa/(1-Umin);
+
+    VolumenMasab=Masab/rob;
+    VolumenMasaBulkB=VolumenMasab/(1-U);
+
+    Jt=(VolumenMasaBulk+VolumenMasaBulkB)/Vm;
+
+    Jpm=sqrt(Q/(6100*GOA*rn^(2.5)*Cs^(-1.38)*D^0.5));
+    Jmax=0.5*Jt-Jpo;
+
+if Jpm > Jmax
+   
+    JpmTemp=Jpm;
+    Jpm=Jmax;
+    Qm=Jpm^2*6100*GOA*gamma^(2.5)*Cs^(-1.38)*D^0.5;
+    Qt=Q-Qm;
+    Jpt=Qt/(935*gamma^(2)*GOA*D^0.5);
+    Jp=Jpm+Jpt;
+    
+else
+    Jp=Jpm;
+end
+    
+    VolumenMasaMenor=MasaMenor/ros;
+    VolumenMasaMenorb=MasaMenorb/rob;
+    
+    VolumenMasaMenorBulk=VolumenMasaMenor/(1-Umin);
+    VolumenMasaMenorBulkB=VolumenMasaMenorb/(1-U);
+
+    Jpg2=(Wcarga/rol+VolumenMasaMenorBulk+VolumenMasaMenorBulkB)/Vm;
+    Jp2=Jpg2-Jpo;
+    Jpg=Jp+Jpo;%%%%%%%%%%%
+    
+d0vector(kk+1)=d0;
+    
+sxm=Jpg*Vm;
+% d0_=d0*(sxm/sxm_);
+d0_=d0*(Jpg2/Jpg);
+if ~ (d0_ < 0)
+    d0=d0_;
+end
+sxm_=sxm;
+kk=kk+1;
+s=s_;
+Wcarga=win/d0;
+end
+
+% p=zeros(length(v)-1,1);
+% for i=1:length(s_)
+%     sumai=0;
+%     for j=1:i-1
+%             sumai=sumai+R(j)*s(j)*AFinal(i,j);
+%     end 
+%             p(i)=F(i)+sumai-(1-AFinal(i,i))*R(i)*s(i);
+% end
+
+
+p=d0*c.*s;
+%     Wcarga=win/d0;
+    Wsolidos=sum(s)/(Wcarga*rol+sum(s))*100;
+% Power
+z=(1-Jt)^0.4532;
+rt=Dt/2;
+Lcone=(D-Dt)/2*tan(pi()*DiscargeConeangle/180);
+% h=0.67*(2*Q/(pi()*rt*sqrt(9.81)))^(2/3);
+S=(P/ros)/(P/ros+win)*100;
+Ucharge=Jpm/(U*Jt);
+roc=(Jt*ros*(1-U+U*Ucharge*S/100)+Jb*(rob-ros)*(1-U)+Jt*U*Ucharge*(1-S/100))/Jt;
+r_=rm/2*(1+(1-2*pi()*Jt/(2*pi()+thetas-thetat))^0.5);
+N_=Nm/2;
+tc=(2*pi()-thetat+thetas)/(2*pi()*N_);
+tf=((2*r_*(sin(thetas)-sin(thetat)))/9.81)^0.5;
+B=tc/(tc+tf);
+ri=rm*(1-(2*pi()*B*Jt)/(2*pi()+thetas-thetat))^0.5;
+
+Pnet=pi()*L*Nm*rm*9.81/(3*(rm-z*ri))*(2*rm^3-3*z*rm^2*ri+ri^3*(3*z-2))*(roc*(sin(thetas)-sin(thetat)))...
++L*roc*(Nm*rm*pi()/(rm-z*ri))^3*((rm-z*ri)^4-ri^4*(z-1)^4);
+
+Pc=pi()*Lcone*9.81*Nm/(3*(rm-rt))*(rm^4-4*rm*ri^3+3*ri^4)*(roc*(sin(thetas)-sin(thetat)))...
+    +2*pi()^3*Nm*Lcone*roc/(5*(rm-rt))*(rm^5-5*rm*ri^4+4*ri^5);
+
+knon=1.68;
+Pnon=knon*(D^2.5*Cs*(0.667*Lcone+L))^0.82;
+P=Pnon+1.26*(Pc+Pnet); %%% Factor
+SP=Pasante(s);
+PP=Pasante(p);
+FP=Pasante(F);
+
+% semilogx(v2,FP,'k',v2,SP,'r',v2,PP,'b')
+% JtotalN=(sum(s)/ros+Wcarga)/Vm+Jb;
+% Rock=[s(v >= 16);zeros(length(v2)-length(s(v >= 16)),1)];
+Out=[p;win];
+end
