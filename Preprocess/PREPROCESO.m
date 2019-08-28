@@ -575,7 +575,7 @@ for i=1:length(S)
                         if Info(j).Stream.weigth == S(i).Streams.weigth
                             if isfield(Info(j),'en')
                                 if strcmp(Info(j).tag,'Input')
-                                    S(i).Streams.Value = Info(j).en.val
+                                    S(i).Streams.Value = Info(j).en.val;
                                 end
                             end
                         end

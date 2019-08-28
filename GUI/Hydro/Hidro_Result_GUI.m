@@ -32,7 +32,7 @@ grid on
 Pxe=710;
 Pxt=650;
 
-d50=uicontrol(HIDRO_Result_F,'style','text','String',sprintf('%.2f',Info(k).W),'FontSize',9);
+d50=uicontrol(HIDRO_Result_F,'style','text','String',sprintf('%.2f',Info(k).Container.d50),'FontSize',9);
 d50.Position = [Pxe 380 60 20];
 
 d50=uicontrol(HIDRO_Result_F,'style','text','string','% S�lido','FontSize',9);

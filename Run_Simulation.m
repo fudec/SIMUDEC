@@ -49,6 +49,6 @@ if m < n
     v=v';
 end
 delete(wb)
-msgbox('Simulación terminada');
+msgbox('Simulation Finished');
 state= 1;
 end
