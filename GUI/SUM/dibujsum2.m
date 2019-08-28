@@ -5,8 +5,8 @@ global cx cy k ck Info cu cu2 axesgnu a b
 delete(hObject.Parent)
 axis([0 a 0 b])
 defaultValue = 2;
-titleBar = 'N�mero de entradas';
-userPrompt = 'N�mero de entradas';
+titleBar = 'Inputs Number';
+userPrompt = 'Inputs Number';
 caUserInput = inputdlg(userPrompt, titleBar, 1, {num2str(defaultValue)});
 
 if isempty(caUserInput)
@@ -14,7 +14,7 @@ if isempty(caUserInput)
 end
 n = round(str2double(cell2mat(caUserInput)));
 if n < 2
-    wrn=warndlg('N�mero m�nimo entradas:2','Advertencia');
+    wrn=warndlg('Minumun Inputs:2','Warning');
     waitfor(wrn)
     caUserInput = inputdlg(userPrompt, titleBar, 1, {num2str(defaultValue)});
     if isempty(caUserInput)
@@ -23,7 +23,7 @@ if n < 2
 
 elseif n > 4
     
-    wrn=warndlg('N�mero m�ximo de entradas: 4','Advertencia');
+    wrn=warndlg('Maximun Inputs: 4','Warning');
     waitfor(wrn)
     caUserInput = inputdlg(userPrompt, titleBar, 1, {num2str(defaultValue)});
     if isempty(caUserInput)
@@ -33,7 +33,7 @@ end
 
      state=1;
      f_sum=figure;
-     set(f_sum,'name','Sumador','numbertitle','off','Position',  [500,200,150,280],'Units','pixels','menubar','none','units','normalized','closereq',@Cancelar_callback,...
+     set(f_sum,'name','SUM','numbertitle','off','Position',  [500,200,150,280],'Units','pixels','menubar','none','units','normalized','closereq',@Cancelar_callback,...
          'Resize','off')
     
 bg = uibuttongroup(f_sum);
@@ -45,7 +45,7 @@ set(bg,'Visible','on',...
 txt = uicontrol('Parent',bg,...
            'Style','text',...
            'Position',[25 245 100 25],...
-           'String','Orientaci�n');
+           'String','Orientation');
        
 r1 = uicontrol(bg,'Style',...
                   'radiobutton',...
@@ -89,7 +89,7 @@ Cancelar = uicontrol('Parent',bg,...
          tagstr=get(tag,'String');
         elec=bg.SelectedObject.String;
         if isempty(tagstr)
-             warndlg('Ingresar etiqueta equipo');
+             warndlg('Add Tag');
         else
             delete(f_sum)
         end 
@@ -362,7 +362,7 @@ elseif n==4
     m1 = uimenu(c,'Label','Eliminar M�dulo','Callback',@Eliminar_modulo_sum);
     setappdata(m1,'Index',strcat(tagstr,num2str(rand(1,1))));
     
-    Info(cu).tag='Sumador';
+    Info(cu).tag='Sum';
     Sum_image=imread('Sumador_plot.jpg');
     Sum_image=imresize(Sum_image, [magnitud*3.3 magnitud]);
     plot_h=image(axesgnu,cx(k)-magnitud/2,abs(cy(k)-magnitud/2),Sum_image);

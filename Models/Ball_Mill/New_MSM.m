@@ -2,7 +2,7 @@ function out=New_MSM(X,Container)
 global ros rol v Info
  v_ = v/1000;
 
-
+  
   Dsim = Container.D_sim;
   Dfit = Container.D_ori;
         
@@ -136,6 +136,7 @@ Pc=pi()*Lcone*9.81*Nm/(3*(rm-rt))*(rm^4-4*rm*ri^3+3*ri^4)*(roc*(sin(thetas)-sin(
 knon=2.13;
 Pnon=knon*(Dsim^2.5*phi*(0.667*Lcone+Lsim))^0.82;
 P=Pnon+1.26*(Pc+Pnet);
+Container.Index
 I = get_index_info(Container.Index);
 Info(I).Container.Potencia = P;
 out =[p;win];

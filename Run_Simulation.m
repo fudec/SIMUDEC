@@ -1,4 +1,4 @@
-% function Run_Simulation(~,~)
+%  function Run_Simulation(~,~)
 global v  X  cu S2 SolverData MaxIt Tol state Info OrderGroup
 % F1=[0.00 17.00 20.60 18.07 12.33 14.34 10.84 5.41 5.10 3.90 3.54 3.01 2.59 2.21 1.88 1.62 1.38 1.18 0.85 0.15]';
 % f1=F1';
@@ -46,7 +46,7 @@ end
 % M(13) = M(5);
      
 [OrderGroup,S2,TYPTime]=AlDefV2(B,S,M);
-[OrderGroup,flag]=Info_Connexion(OrderGroup,B);
+[OrderGroup,flag]=Info_Connexion2(OrderGroup);
 if flag == 1
     return
 end

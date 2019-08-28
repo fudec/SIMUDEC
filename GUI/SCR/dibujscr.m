@@ -60,7 +60,7 @@ Cancelar = uicontrol('Parent',bg,...
          tagstr=get(tag,'String');
         elec=bg.SelectedObject.String;
         if isempty(tagstr)
-             warndlg('Inputa Tag');
+             warndlg('Input Tag');
         else
             delete(f_hid)
         end 

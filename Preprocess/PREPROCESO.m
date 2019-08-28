@@ -19,18 +19,30 @@ S=Stream_group;
 v1=0; %%% Contadpr Flujos
 v2=0; %%% Contador Modulos
 ck=0;
+cnsep = 0;
 for i=1:cu
     if strcmp(Info(i).tag,'Stream')
         v1=v1+1;
     elseif ~strcmp(Info(i).tag,'Stream') && ~strcmp(Info(i).tag,'Input')
         v2=v2+1;
-    elseif strcmp(Info(i).tag,'Hydrocyclone')
-        ck=ck+1;
     end
 end
-%%%% DOF an�lisis %%%%%%%5
 
-if e < v2
+for i=1:cu
+    if strcmp(Info(i).tag,'Hydrocyclone')
+           ck=ck+1;
+    end
+end
+
+for i=1:cu
+    if ~strcmp(Info(i).tag,'Stream') && ~strcmp(Info(i).tag,'Input') && ~strcmp(Info(i).tag,'Hydrocyclone') 
+            cnsep = cnsep + 1;
+    end
+end
+
+%%%% DOF an�lisis %%%%%%%5
+DOF  = (cnsep+2*ck)-v1;
+if e < DOF
     warndlg('Add more inputs');
     flag = 1;
 end
@@ -302,10 +314,11 @@ end
 for k=1:f
      for i=1:c
         if strcmp(Info(k).n.tag,'Sum')
-           if length(Info(k).n.ioc(:,1))-1 == 2
+            Info(k).n.ioc
+           if length(Info(k).n.ioc(:,1)) == 2
                 if strcmp(Info(i).v.tag,'Stream')== 1 || strcmp(Info(i).v.tag,'Input')
                       
-                    if ((Info(i).v.ioc(2,1)-Info(k).n.ioc(1,1))^2+(Info(i).v.ioc(2,2)-Info(k).n.ioc(1,2))^2)^Exponent < Delta*1.1 
+                    if ((Info(i).v.ioc(2,1)-Info(k).n.ioc(1,1))^2+(Info(i).v.ioc(2,2)-Info(k).n.ioc(1,2))^2)^Exponent < Delta*1.1
                             A(k,i).c=-1;
                             A(k,i).F=sprintf('Stream %d',i);
                             A(k,i).tn=k;
@@ -314,7 +327,7 @@ for k=1:f
                             A(k,i).M=Info(k).M;
 
                     end
-                    if ((Info(i).v.ioc(2,1)-Info(k).n.ioc(2,1))^2+(Info(i).v.ioc(2,2)-Info(k).n.ioc(2,2))^2)^Exponent < Delta*1.1 
+                    if ((Info(i).v.ioc(2,1)-Info(k).n.ioc(2,1))^2+(Info(i).v.ioc(2,2)-Info(k).n.ioc(2,2))^2)^Exponent < Delta*1.1
                             A(k,i).c=-1;
                             A(k,i).F=sprintf('Stream %d',i);
                             A(k,i).tn=k;
@@ -323,7 +336,7 @@ for k=1:f
                             A(k,1).M=Info(k).M;
                     end
                     
-                    if ((Info(i).v.ioc(1,1)-Info(k).n.ioc(3,1))^2+(Info(i).v.ioc(1,2)-Info(k).n.ioc(3,2))^2)^Exponent < Delta*1.1 
+                    if ((Info(i).v.ioc(1,1)-Info(k).n.ioc(2,1))^2+(Info(i).v.ioc(1,2)-Info(k).n.ioc(2,2))^2)^Exponent < Delta*1.1
                             A(k,i).c=1;
                             S(i).Streams=Info(i).v.Stream;
                             M(k).Ecuacion=@Modulo_SUM;
@@ -419,7 +432,7 @@ for k=1:f
     for i=1:c
            if strcmp(Info(k).n.tag,'Ball Mill')             
                 if strcmp(Info(i).v.tag,'Stream') || strcmp(Info(i).v.tag,'Input')     
-                   if ((Info(i).v.ioc(2,1)-Info(k).n.ioc(1,1))^2+(Info(i).v.ioc(2,2)-Info(k).n.ioc(1,2))^2)^Exponent < Delta                       
+                   if ((Info(i).v.ioc(2,1)-Info(k).n.ioc(1,1))^2+(Info(i).v.ioc(2,2)-Info(k).n.ioc(1,2))^2)^Exponent < Delta*1.31                       
                        A(k,i).c=-1;
                        A(k,i).F=sprintf('Stream %d',i);
                        A(k,i).tn=k;
@@ -596,14 +609,15 @@ for k = 1:length(Adj(:,1))
     
     Power = Power + Adj^k;
 end
+ Power
 if v2 > 1
     for i=1:length(Power)
         for j=1:length(Power)
-            if Power(i,j) == 0
-                warndlg('System is no connected')
-                flag = 1;
-                return
-            end
+%             if Power(i,j) == 0
+%                 warndlg('System is no connected')
+%                 flag = 1;F
+%                 return
+%             end
         end
     end
 end

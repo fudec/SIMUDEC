@@ -63,7 +63,7 @@ global Info
         Container.d50=0;
         Container.Presion=0;
         Container.Rf=0;
-        Container.Index=Index;
+        Container.Index=Info(Index).Index;
         
 Info(Index).Container=Container;
 msgbox('Saved','');

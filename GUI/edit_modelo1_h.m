@@ -4,7 +4,7 @@ global Info
 x = get_index_info(x.Index);
 
 
-if  isempty(Info(4).Container)
+if  isempty(Info(x).Container)
     wrndl=warndlg('There is no data for this model','Warning');
     return
 end
@@ -17,14 +17,14 @@ end
         theta=Info(x).Container.theta;        
         N=Info(x).Container.N;
         
-        KQ0=Info(4).Container.KQ0;
-        Kd0=Info(4).Container.Kd0;
-        Kw1=Info(4).Container.Kw1;        
-        Kv1=Info(4).Container.Kv1;
+        KQ0=Info(x).Container.KQ0;
+        Kd0=Info(x).Container.Kd0;
+        Kw1=Info(x).Container.Kw1;        
+        Kv1=Info(x).Container.Kv1;
         
-        alfa=Info(4).Container.alfa;
-        beta=Info(4).Container.beta;        
-        beta_=Info(4).Container.beta_;
+        alfa=Info(x).Container.alfa;
+        beta=Info(x).Container.beta;        
+        beta_=Info(x).Container.beta_;
  
 figure_modelo_hidro=figure;
 figure_modelo_hidro.Position=[600 190 205 450];
