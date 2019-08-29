@@ -292,13 +292,20 @@ end
     end
        hold on
     p2=plot(cx(k),cy(k),'.', 'Markersize',7,'Color',105*ones(3,1)/256);
+    Info(cIdx).Container=[];
+    Info(cIdx).Index = strcat(tagstr,num2str(rand(1,1)));
     hold on
     c = uicontextmenu;
     plot_h.UIContextMenu=c;
-    m3 = uimenu(c,'Label','Eliminar Entrada','Callback',@Eliminar_moduloe);
-    m4 = uimenu(c,'Label','Editar Entrada','Callback',@Editar_Entrada);
-    m3.UserData=cIdx;
-    m4.UserData.Index=Info(cIdx).Index;
+    
+    m3 = uimenu(c,'Label','Delete Input','Callback',@Eliminar_moduloe);
+    m4 = uimenu(c,'Label','Edit Input','Callback',@Editar_Entrada);
+    setappdata(m1,'Index',Info(cIdx).Index);
+    
+    plot_h.UIContextMenu.Children(1).UserData.Index=Info(cu).Index;
+    plot_h.UIContextMenu.Children(2).UserData.Index=Info(cu).Index;
+    plot_h.UIContextMenu.Children(3).UserData.Index=Info(cu).Index;
+    plot_h.UIContextMenu.Children(4).UserData.Index=Info(cu).Index;
     
     plot_h.UserData.points=[p1 p2 l1 l2];
     plot_h.UserData.image=1; %%%%%%%%%%%%%% Revisar

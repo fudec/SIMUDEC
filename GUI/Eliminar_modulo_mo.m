@@ -15,5 +15,4 @@ end
 
 
 cu=cu-1;
-set(r,'Enable','off')
 end

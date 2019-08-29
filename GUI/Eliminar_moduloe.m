@@ -1,6 +1,7 @@
 function Eliminar_moduloe(source,~)
 
 global  Info cu 
+
 k=get_index(source);
 
 
@@ -15,5 +16,4 @@ end
 
 
 cu=cu-1;
-set(r,'Enable','off')
 end
